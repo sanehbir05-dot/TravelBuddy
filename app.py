@@ -91,7 +91,8 @@ MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
 MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 MAIL_FROM = os.environ.get('MAIL_FROM', MAIL_USERNAME)  # e.g. "Travel Buddy <hello@yourdomain.in>"
 EMAIL_ENABLED = bool(BREVO_API_KEY or MAIL_USERNAME)
-SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:5000').rstrip('/')
+# Render sets RENDER_EXTERNAL_URL itself, so SITE_URL is only needed for a custom domain.
+SITE_URL = (os.environ.get('SITE_URL') or os.environ.get('RENDER_EXTERNAL_URL') or 'http://127.0.0.1:5000').rstrip('/')
 
 # Google OAuth (optional)
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')

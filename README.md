@@ -30,7 +30,7 @@ Everything runs on free plans with no card needed: Render for the web server, Ne
 2. **Email (Brevo, free).** Create an account at brevo.com. Under **Senders**, add and verify the address emails come from (a Gmail address works to start; your own domain is less likely to land in spam at Thapar). Under **SMTP & API → API keys**, create a key. Render's free plan blocks email ports, so the app sends through Brevo's API over HTTPS instead.
 3. **Web server (Render, free).** Choose **New → Blueprint** and pick this repository. `render.yaml` sets up a free web service. Render then asks for:
    - `DATABASE_URL`: the Neon connection string
-   - `SITE_URL`: the address Render gives you, for example `https://travel-buddy.onrender.com`
+   - `SITE_URL`: leave blank. The app uses the address Render gives it. Fill it in only if you add your own domain.
    - `ADMIN_EMAILS`: your @thapar.edu address, which is allowed to review reports at `/admin/reports`
    - `BREVO_API_KEY` and `MAIL_FROM`: the Brevo key and the sender you verified, for example `Travel Buddy <you@gmail.com>`
 

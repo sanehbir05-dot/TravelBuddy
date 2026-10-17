@@ -20,7 +20,7 @@ services:
       - key: DATABASE_URL
         sync: false          # paste the Neon connection string
       - key: SITE_URL
-        sync: false          # e.g. https://travel-buddy.onrender.com
+        sync: false          # leave blank: Render's own address is used. Set only for a custom domain.
       - key: ADMIN_EMAILS
         sync: false          # your @thapar.edu address
       - key: BREVO_API_KEY
