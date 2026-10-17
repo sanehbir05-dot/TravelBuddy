@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-7 col-lg-5 mx-auto">
+        <div class="card p-4 p-md-5">
+            <div class="mx-auto mb-2" style="width: 96px;">{% include "_mascot.html" %}</div>
+            <h1 class="page-title text-center mb-2">Log in</h1>
+            <p class="text-muted text-center fw-medium mb-4">Use the {{ EMAIL_HINT }} email you signed up with.</p>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">College email</label>
+                    <input type="email" class="form-control" name="email" required autofocus placeholder="{{ EMAIL_EXAMPLE }}">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-control" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Log in</button>
+            </form>
+            <p class="text-center mt-3 mb-0"><a href="{{ url_for('forgot_password') }}" class="fw-semibold">Forgot your password?</a></p>
+
+            {% if google_enabled() %}
+            <div class="d-flex align-items-center my-3"><hr class="flex-grow-1"><span class="px-3 text-muted small fw-bold">OR</span><hr class="flex-grow-1"></div>
+            <a href="{{ url_for('login_google') }}" class="btn btn-outline-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="22" height="22"> Sign in with Google
+            </a>
+            {% endif %}
+
+            <p class="text-center text-muted fw-medium mt-4 mb-0">New here?
+                <a href="{{ url_for('register') }}" class="fw-bold">Sign up with your college email</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

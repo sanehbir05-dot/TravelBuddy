@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Send request{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-7">
+        <div class="card p-4 p-md-5">
+            <h1 class="page-title mb-2">Travel with {{ trip.user.public_name }}?</h1>
+            <p class="text-muted fw-medium mb-4">They'll see your first name, batch and note. If they accept, you can chat and plan the journey.</p>
+
+            <div class="tile mb-4">
+                <h5 class="mb-2">{{ trip.origin }} → {{ trip.destination }}</h5>
+                {% set t = trip %}{% include "_trip_chips.html" %}
+                {% if trip.preferences %}<p class="small text-muted mt-2 mb-0">“{{ trip.preferences }}”</p>{% endif %}
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if my_trips %}
+                <div class="mb-3">
+                    <label class="form-label">Your trip</label>
+                    <select name="sender_trip_id" class="form-select">
+                        {% for mt in my_trips %}<option value="{{ mt.id }}">{{ mt.origin }} → {{ mt.destination }}, {{ mt.date|nice_date }} ~{{ mt.time }}</option>{% endfor %}
+                        <option value="">Don't attach a trip</option>
+                    </select>
+                </div>
+                {% endif %}
+                <div class="mb-3">
+                    <label class="form-label">Note (optional)</label>
+                    <textarea name="note" class="form-control" rows="2" maxlength="300" placeholder="Hi! I'm also taking the evening bus from Sector 17. Want to travel together?"></textarea>
+                </div>
+                {% if current_user.contact_info %}
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="share_contact" name="share_contact">
+                    <label class="form-check-label" for="share_contact">Share my contact (<strong>{{ current_user.contact_info }}</strong>) once they accept</label>
+                </div>
+                {% endif %}
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-primary btn-lg">Send request</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg">Back</a>
+                </div>
+            </form>
+            <div class="mt-4 small">
+                <a href="{{ url_for('report_user', user_id=trip.user_id) }}" class="btn-link-danger text-decoration-none">Report this student</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

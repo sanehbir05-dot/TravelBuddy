@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Set up profile{% endblock %}
+
+{% block content %}
+{% set form = {} %}
+<div class="row">
+    <div class="col-md-8 col-lg-6 mx-auto">
+        <div class="card p-4 p-md-5">
+            <h1 class="page-title mb-2">Hi, {{ current_user.name.split()[0] }}!</h1>
+            <p class="text-muted fw-medium mb-4">A few details so we can match you with students from your college.</p>
+
+            <form method="POST" action="{{ url_for('setup_profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Gender</label>
+                    <select class="form-select" name="gender" required>
+                        <option value="" disabled selected>Select...</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                        <option value="other">Non-binary / Other</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    {% if colleges|length == 1 %}
+                        <label class="form-label">College</label>
+                        <input type="hidden" name="college" value="{{ colleges[0] }}">
+                        <div class="form-control" style="background: var(--cream);">{{ colleges[0] }}</div>
+                        {% else %}
+                        <label class="form-label">Your college</label>
+                        <select class="form-select" name="college" required id="college-select">
+                            <option value="">Search your college...</option>
+                            {% for college in colleges %}
+                                <option value="{{ college }}" {% if form.get('college') == college %}selected{% endif %}>{{ college }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                </div>
+                <div class="mb-3">{% include "_batch_field.html" %}</div>
+                <div class="mb-4">
+                    <label class="form-label">WhatsApp / Instagram (optional)</label>
+                    <input type="text" class="form-control" name="contact_info" placeholder="@username or +91...">
+                    <small class="text-muted">Never shown publicly.</small>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Finish setup</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}{% include "_college_select_js.html" %}{% endblock %}

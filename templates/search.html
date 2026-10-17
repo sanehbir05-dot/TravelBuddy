@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Browse trips{% endblock %}
+
+{% block content %}
+<h1 class="page-title mb-2">Browse campus trips</h1>
+<p class="text-muted fw-medium mb-4">Upcoming trips posted by students from {{ current_user.college }}.</p>
+
+<form method="GET" class="card bg-cream p-3 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label">Going to</label>
+            <input type="text" name="destination" class="form-control" value="{{ destination }}" placeholder="e.g. Delhi">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">On</label>
+            <input type="date" name="date" class="form-control" value="{{ date }}">
+        </div>
+        <div class="col-md-2">
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" name="women" value="1" id="women" {% if women_only %}checked{% endif %}>
+                <label class="form-check-label fw-semibold" for="women">Women only</label>
+            </div>
+        </div>
+        <div class="col-md-2 d-grid"><button class="btn btn-primary">Search</button></div>
+    </div>
+</form>
+
+{% if not has_trips %}
+<div class="alert alert-warning">Tip: <a href="{{ url_for('create_trip') }}" class="fw-bold">post your own trip</a> to get automatic matches by time.</div>
+{% endif %}
+
+{% if trips %}
+<div class="row g-3">
+    {% for t in trips %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card match-card h-100 p-3">
+            <h5 class="mb-0">{{ t.origin }} → {{ t.destination }}</h5>
+            <div class="small text-muted fw-semibold mb-2">{{ t.user.public_name }} · Batch {{ t.user.batch }}</div>
+            {% include "_trip_chips.html" %}
+            {% if t.preferences %}<p class="small text-muted mt-2 mb-0">“{{ t.preferences }}”</p>{% endif %}
+            <a href="{{ url_for('send_request', trip_id=t.id) }}" class="btn btn-outline-primary btn-sm mt-3">Connect</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty">
+    <div class="mx-auto" style="width:110px">{% include "_mascot.html" %}</div>
+    <h4>Nothing here yet</h4>
+    <p class="text-muted">No upcoming trips match that search.</p>
+</div>
+{% endif %}
+{% endblock %}

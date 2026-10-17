@@ -1,0 +1,19 @@
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script>
+    function toggleCustomBatch() {
+        var select = document.getElementById('batch-select');
+        var box = document.getElementById('custom-batch-container');
+        var input = document.getElementById('custom-batch-input');
+        if (!select) return;
+        var custom = select.value === 'custom';
+        box.style.display = custom ? 'block' : 'none';
+        input.required = custom;
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.TomSelect && document.getElementById('college-select')) {
+            new TomSelect('#college-select', { maxItems: 1, openOnFocus: true, placeholder: 'Type to search your college...' });
+        }
+        toggleCustomBatch();
+    });
+</script>

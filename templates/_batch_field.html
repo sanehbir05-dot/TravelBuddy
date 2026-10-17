@@ -1,0 +1,10 @@
+{% set batch_value = form.get('batch', '2026') if form else '2026' %}
+<label class="form-label">Batch / year</label>
+<select class="form-select" name="batch" required id="batch-select" onchange="toggleCustomBatch()">
+    {% for v, l in [('2026','2026'), ('2027','2027'), ('2028','2028'), ('2029','2029'), ('2025','2025'), ('custom','Other (type it)')] %}
+    <option value="{{ v }}" {% if batch_value == v %}selected{% endif %}>{{ l }}</option>
+    {% endfor %}
+</select>
+<div id="custom-batch-container" class="mt-2" style="display: none;">
+    <input type="text" class="form-control" name="custom_batch" id="custom-batch-input" placeholder="e.g. CSE-2027" value="{{ form.get('custom_batch', '') if form else '' }}">
+</div>

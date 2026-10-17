@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Buddy - {% block title %}Find your travel buddy{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* ── Theme: Yolk / Cream / Pink / Sky / Forest ── */
+        :root {
+            --yolk: #FFD84A;
+            --yolk-soft: #FFE98A;
+            --cream: #FFF9E3;
+            --pink: #FFADE2;
+            --pink-soft: #FFD6F1;
+            --sky: #8EA8EE;
+            --sky-soft: #D7E1FB;
+            --forest: #4A2A1F;
+            --forest-soft: #7A5A4E;
+            --white: #FFFFFF;
+            --radius: 22px;
+            --bs-body-color: var(--forest);
+            --bs-body-bg: var(--cream);
+            --bs-primary-rgb: 74, 42, 31;
+            --bs-link-color: var(--forest);
+            --bs-link-hover-color: var(--forest);
+            --bs-secondary-color: var(--forest-soft);
+        }
+
+        body { font-family: 'Bricolage Grotesque', system-ui, sans-serif; background: var(--cream); color: var(--forest); min-height: 100vh; }
+        h1, h2, h3, .display-font {
+            font-family: 'Anton', 'Impact', sans-serif; font-weight: 400; text-transform: uppercase;
+            letter-spacing: 0.5px; line-height: 0.95; color: var(--forest);
+        }
+        h4, h5, h6 { font-weight: 800; color: var(--forest); }
+        .text-muted, .text-secondary { color: var(--forest-soft) !important; }
+        .text-primary { color: var(--forest) !important; }
+        a { color: var(--forest); }
+
+        /* Nav */
+        .tb-nav { background: var(--yolk); border-bottom: 3px solid var(--forest); padding: 14px 0; }
+        .tb-nav .navbar-brand { font-family: 'Anton', sans-serif; font-size: 1.7rem; color: var(--forest); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .tb-nav .navbar-brand .mascot { width: 40px; height: 40px; }
+        .tb-nav .nav-link { font-weight: 700; color: var(--forest) !important; border-radius: 999px; padding: 6px 14px !important; }
+        .tb-nav .nav-link:hover, .tb-nav .nav-link.active { background: var(--cream); }
+        .navbar-toggler { border: 2px solid var(--forest); }
+
+        /* Buttons */
+        .btn { border-radius: 999px; font-weight: 700; }
+        .btn-primary { background: var(--forest); color: var(--cream); border: 2px solid var(--forest); padding: 0.6rem 1.5rem; }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active { background: #2f1a13 !important; color: var(--yolk) !important; border-color: #2f1a13 !important; }
+        .btn-outline-primary, .btn-outline-secondary { background: var(--white); color: var(--forest); border: 2px solid var(--forest); }
+        .btn-outline-primary:hover, .btn-outline-secondary:hover { background: var(--yolk); color: var(--forest); border-color: var(--forest); }
+        .btn-yolk { background: var(--yolk); color: var(--forest); border: 2px solid var(--forest); }
+        .btn-yolk:hover { background: var(--yolk-soft); color: var(--forest); }
+        .btn-success { background: var(--sky); color: var(--forest); border: 2px solid var(--forest); }
+        .btn-success:hover { background: var(--sky-soft); color: var(--forest); border-color: var(--forest); }
+        .btn-outline-danger { border-width: 2px; }
+        .btn-link-danger { color: #b3261e; background: none; border: none; padding: 0; font-weight: 600; font-size: 0.85rem; }
+
+        /* Cards */
+        .card { background: var(--white); border: 2.5px solid var(--forest); border-radius: var(--radius); box-shadow: 0 5px 0 var(--forest); overflow: hidden; }
+        .card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 0 var(--forest); }
+        .card.bg-yolk { background: var(--yolk); } .card.bg-pink { background: var(--pink); }
+        .card.bg-sky { background: var(--sky); } .card.bg-cream { background: var(--cream); }
+        .trip-card { border-left-width: 12px; border-left-color: var(--yolk); }
+        .match-card { border-left-width: 12px; border-left-color: var(--sky); }
+        .tile { background: var(--cream); border: 2px solid var(--forest); border-radius: 16px; padding: 14px; }
+
+        /* Forms */
+        .form-control, .form-select { border-radius: 14px; border: 2px solid var(--forest); padding: 0.75rem 1.1rem; font-weight: 500; background: var(--white); color: var(--forest); }
+        .form-control:focus, .form-select:focus { border-color: var(--forest); box-shadow: 0 0 0 4px var(--yolk); }
+        .form-label { color: var(--forest); font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.6px; }
+        .form-check-input { border: 2px solid var(--forest); }
+        .form-check-input:checked { background-color: var(--forest); border-color: var(--forest); }
+        .ts-control { border-radius: 14px !important; border: 2px solid var(--forest) !important; padding: 0.75rem 1.1rem !important; }
+
+        /* Badges & chips */
+        .chip { display: inline-flex; align-items: center; gap: 5px; background: var(--cream); border: 2px solid var(--forest); border-radius: 999px; padding: 3px 11px; font-size: 0.8rem; font-weight: 700; color: var(--forest); }
+        .chip-sky { background: var(--sky-soft); } .chip-yolk { background: var(--yolk); } .chip-pink { background: var(--pink-soft); }
+        .badge-female { display: inline-flex; align-items: center; gap: 4px; background: var(--pink); color: var(--forest); border: 2px solid var(--forest); border-radius: 999px; padding: 3px 11px; font-size: 0.78rem; font-weight: 800; }
+        .status-pending { background: var(--yolk); } .status-accepted { background: var(--sky); } .status-declined, .status-cancelled { background: #f1d9d5; }
+
+        /* Alerts */
+        .alert { border-radius: 16px; border: 2px solid var(--forest); font-weight: 600; color: var(--forest); }
+        .alert-primary { background: var(--sky-soft); } .alert-warning { background: var(--yolk-soft); }
+
+        /* Marquee strip */
+        .marquee { background: var(--pink); border-block: 3px solid var(--forest); overflow: hidden; white-space: nowrap; padding: 12px 0; }
+        .marquee-track { display: inline-block; animation: marquee 28s linear infinite; }
+        .marquee span { font-weight: 800; font-size: 1.35rem; margin-right: 2.5rem; color: var(--forest); }
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+        .page { max-width: 1200px; margin: 0 auto; padding: 32px 16px 40px; }
+        .page-title { font-size: clamp(2.4rem, 6vw, 4rem); }
+        .empty { text-align: center; padding: 36px 20px; }
+        .empty .mascot { width: 110px; height: 110px; margin-bottom: 12px; }
+        .footer { background: var(--forest); color: var(--cream); padding: 32px 16px; margin-top: 60px; text-align: center; }
+        .footer a, .footer .text-muted { color: var(--yolk-soft) !important; }
+    </style>
+    <link rel="manifest" href="{{ url_for('manifest') }}">
+    <meta name="theme-color" content="#FFD84A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Travel Buddy">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icons/favicon-32.png') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg tb-nav">
+        <div class="container" style="max-width: 1200px;">
+            <a class="navbar-brand" href="{{ url_for('index') }}"><span class="d-inline-block" style="width:40px;height:40px;">{% include "_mascot.html" %}</span>Travel Buddy</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item"><a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.endpoint == 'create_trip' %}active{% endif %}" href="{{ url_for('create_trip') }}">Post a trip</a></li>
+                        <li class="nav-item"><a class="nav-link {% if request.endpoint == 'search' %}active{% endif %}" href="{{ url_for('search') }}">Browse</a></li>
+                        {% if current_user.is_admin %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_reports') }}">Reports</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}" href="{{ url_for('profile') }}"><i class="bi bi-person-circle me-1"></i>{{ current_user.name.split()[0] }}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('logout') }}">Log out</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Log in</a></li>
+                        <li class="nav-item ms-lg-2"><a class="btn btn-primary btn-sm px-3" href="{{ url_for('register') }}">Sign up</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% block hero %}{% endblock %}
+
+    <div class="page">
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endwith %}
+        <main>{% block content %}{% endblock %}</main>
+    </div>
+
+    <footer class="footer">
+        <div class="display-font fs-3 mb-1">Travel Buddy</div>
+        <small class="text-muted">Travel Buddy helps students from the same college find each other before a journey. It doesn't sell tickets, arrange transport or guarantee anyone's safety. Meet at the station or another public place.</small>
+        <div class="mt-2"><a href="{{ url_for('privacy') }}" class="small">Privacy</a></div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {}); });
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Render Blueprint: in Render, choose New > Blueprint and pick this repo.
+# The database lives on Neon (or any Postgres): paste its connection string as DATABASE_URL when Render asks.
+services:
+  - type: web
+    name: travel-buddy
+    runtime: python
+    plan: starter            # always on (about $7/month). Use "free" to try it out; it sleeps when idle.
+    region: singapore        # closest Render region to India
+    buildCommand: pip install -r requirements.txt
+    preDeployCommand: flask --app app db upgrade
+    startCommand: gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.13.1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false          # paste the Neon connection string
+      - key: SITE_URL
+        sync: false          # e.g. https://travel-buddy.onrender.com
+      - key: ADMIN_EMAILS
+        sync: false          # your @thapar.edu address
+      - key: MAIL_SERVER
+        value: smtp-relay.brevo.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        sync: false          # Brevo SMTP login
+      - key: MAIL_PASSWORD
+        sync: false          # Brevo SMTP key
+      - key: MAIL_FROM
+        sync: false          # e.g. Travel Buddy <noreply@yourdomain.in>
