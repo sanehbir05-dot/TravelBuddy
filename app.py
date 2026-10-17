@@ -2,10 +2,13 @@
 import os
 import re
 import secrets
+import json
 import smtplib
+import urllib.request
 from datetime import datetime, date, timedelta, timezone
 from zoneinfo import ZoneInfo
 from email.message import EmailMessage
+from email.utils import parseaddr
 from functools import wraps
 
 import click
@@ -79,12 +82,15 @@ ALLOWED_EMAIL_DOMAINS = [d.strip().lower().lstrip('@') for d in os.environ.get('
 EMAIL_HINT = ' or '.join('@' + d for d in ALLOWED_EMAIL_DOMAINS)
 ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get('ADMIN_EMAILS', '').split(',') if e.strip()}
 
-# Email (optional). Without MAIL_USERNAME the verification code is shown on screen (dev mode).
+# Email (optional). Without BREVO_API_KEY or MAIL_USERNAME the verification code is shown on screen (dev mode).
+# Render's free plan blocks SMTP ports, so online use BREVO_API_KEY (sent over HTTPS). SMTP is for local or paid hosts.
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
 MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 MAIL_FROM = os.environ.get('MAIL_FROM', MAIL_USERNAME)  # e.g. "Travel Buddy <hello@yourdomain.in>"
+EMAIL_ENABLED = bool(BREVO_API_KEY or MAIL_USERNAME)
 SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:5000').rstrip('/')
 
 # Google OAuth (optional)
@@ -295,21 +301,36 @@ def is_student_email(email):
     return domain in ALLOWED_EMAIL_DOMAINS
 
 
-def send_email(to, subject, body):
-    """Send a plain-text email. Returns False when SMTP is not configured or sending failed."""
-    if not MAIL_USERNAME:
-        print(f"[dev] Email to {to}: {subject}\n{body}")
-        return False
+def send_email_brevo(to, subject, body):
+    name, addr = parseaddr(MAIL_FROM)
+    payload = {'sender': {'name': name or 'Travel Buddy', 'email': addr},
+               'to': [{'email': to}], 'subject': subject, 'textContent': body}
+    req = urllib.request.Request('https://api.brevo.com/v3/smtp/email', data=json.dumps(payload).encode(),
+                                 headers={'api-key': BREVO_API_KEY, 'content-type': 'application/json',
+                                          'accept': 'application/json'})
+    with urllib.request.urlopen(req, timeout=15):
+        pass
+
+
+def send_email_smtp(to, subject, body):
     msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = MAIL_FROM
     msg['To'] = to
     msg.set_content(body)
+    with smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=15) as smtp:
+        smtp.starttls()
+        smtp.login(MAIL_USERNAME, MAIL_PASSWORD)
+        smtp.send_message(msg)
+
+
+def send_email(to, subject, body):
+    """Send a plain-text email. Returns False when email is not configured or sending failed."""
+    if not EMAIL_ENABLED:
+        print(f"[dev] Email to {to}: {subject}\n{body}")
+        return False
     try:
-        with smtplib.SMTP(MAIL_SERVER, MAIL_PORT, timeout=15) as smtp:
-            smtp.starttls()
-            smtp.login(MAIL_USERNAME, MAIL_PASSWORD)
-            smtp.send_message(msg)
+        (send_email_brevo if BREVO_API_KEY else send_email_smtp)(to, subject, body)
     except Exception as e:  # noqa: BLE001
         app.logger.error('Error sending email to %s: %s', to, e)
         return False
@@ -323,7 +344,7 @@ def send_otp(email, purpose='verify'):
     db.session.add(OTP(email=email, code=code))
     db.session.commit()
 
-    if not MAIL_USERNAME:
+    if not EMAIL_ENABLED:
         print(f"[dev] Travel Buddy {purpose} code for {email}: {code}")
         return code
     what = 'reset your password' if purpose == 'reset' else 'verify your email'

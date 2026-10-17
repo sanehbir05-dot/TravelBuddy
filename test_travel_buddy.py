@@ -9,6 +9,7 @@ from datetime import date, timedelta
 _db_file = os.path.join(tempfile.mkdtemp(), 'test.db')
 os.environ['DATABASE_URL'] = os.environ.get('TEST_DATABASE_URL', f'sqlite:///{_db_file}')
 os.environ.pop('MAIL_USERNAME', None)
+os.environ.pop('BREVO_API_KEY', None)
 os.environ['RATELIMIT_ENABLED'] = '0'
 
 from app import app, db, User, Trip, CompanionRequest, Block, Report, places_match  # noqa: E402
@@ -259,6 +260,29 @@ class TravelBuddyTest(unittest.TestCase):
             self.assertEqual(app_module.database_url(), 'postgresql+psycopg://u:p@host/db')
         finally:
             os.environ['DATABASE_URL'] = os.environ.get('TEST_DATABASE_URL', f'sqlite:///{_db_file}')
+
+    def test_brevo_api_email(self):
+        import json
+        from unittest import mock
+        import app as app_module
+        sent = {}
+
+        class Resp:
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+
+        def fake_urlopen(req, timeout):
+            sent['url'], sent['key'], sent['body'] = req.full_url, req.get_header('Api-key'), json.loads(req.data)
+            return Resp()
+
+        with mock.patch.multiple(app_module, BREVO_API_KEY='k', EMAIL_ENABLED=True,
+                                 MAIL_FROM='Travel Buddy <noreply@example.in>'), \
+                mock.patch('urllib.request.urlopen', fake_urlopen):
+            self.assertTrue(app_module.send_email('a@thapar.edu', 'Hi', 'Body'))
+        self.assertEqual(sent['url'], 'https://api.brevo.com/v3/smtp/email')
+        self.assertEqual(sent['key'], 'k')
+        self.assertEqual(sent['body']['sender'], {'name': 'Travel Buddy', 'email': 'noreply@example.in'})
+        self.assertEqual(sent['body']['to'], [{'email': 'a@thapar.edu'}])
 
 
 if __name__ == '__main__':

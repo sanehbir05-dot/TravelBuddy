@@ -4,11 +4,11 @@ services:
   - type: web
     name: travel-buddy
     runtime: python
-    plan: starter            # always on (about $7/month). Use "free" to try it out; it sleeps when idle.
+    plan: free               # free plan: sleeps after 15 minutes idle, wakes on the next visit
     region: singapore        # closest Render region to India
     buildCommand: pip install -r requirements.txt
-    preDeployCommand: flask --app app db upgrade
-    startCommand: gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT
+    # The free plan has no pre-deploy step, so the database is upgraded each time the server starts.
+    startCommand: flask --app app db upgrade && gunicorn app:app --workers 1 --threads 4 --bind 0.0.0.0:$PORT
     healthCheckPath: /healthz
     envVars:
       - key: APP_ENV
@@ -23,13 +23,7 @@ services:
         sync: false          # e.g. https://travel-buddy.onrender.com
       - key: ADMIN_EMAILS
         sync: false          # your @thapar.edu address
-      - key: MAIL_SERVER
-        value: smtp-relay.brevo.com
-      - key: MAIL_PORT
-        value: "587"
-      - key: MAIL_USERNAME
-        sync: false          # Brevo SMTP login
-      - key: MAIL_PASSWORD
-        sync: false          # Brevo SMTP key
+      - key: BREVO_API_KEY
+        sync: false          # Brevo > SMTP & API > API keys (the free plan blocks SMTP, so email goes over HTTPS)
       - key: MAIL_FROM
-        sync: false          # e.g. Travel Buddy <noreply@yourdomain.in>
+        sync: false          # a sender verified in Brevo, e.g. Travel Buddy <you@gmail.com>
