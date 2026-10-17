@@ -1,0 +1,9 @@
+:root{--yolk:#FFD84A;--cream:#FFF9E3;--forest:#4A2A1F}
+body{margin:0;background:var(--cream);color:var(--forest);font-family:'Bricolage Grotesque',system-ui,sans-serif;line-height:1.55}
+header{background:var(--yolk);padding:28px 16px}
+header h1{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:clamp(2.5rem,9vw,4.5rem);line-height:.9;margin:0;max-width:760px;margin:0 auto}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}
+a{color:var(--forest);font-weight:700}
+.btn{display:inline-block;background:var(--forest);color:var(--cream);padding:12px 22px;border-radius:999px;text-decoration:none}
+h2{margin-top:2rem}
+footer{max-width:760px;margin:0 auto;padding:0 16px 32px;font-size:.9rem}
