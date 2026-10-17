@@ -101,7 +101,6 @@ test_travel_buddy.py    end-to-end tests
 docs/                   site audit and screenshots
 ```
 
-## Still to decide before launch
+## Google sign-in pages
 
-- Fill in the placeholders on `/privacy`: the contact email, the date, and whether TIET is involved.
-- Pick a sender domain for emails.
+The Google sign-in screen links to the home and privacy pages on the `gh-pages` branch (https://sanehbir05-dot.github.io/TravelBuddy/). If you change `templates/privacy.html`, update `privacy.html` there too.
