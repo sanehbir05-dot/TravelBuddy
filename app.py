@@ -1,9 +1,12 @@
 """Travel Buddy: verified college students find companions on the same journey."""
 import os
+import base64
+import json
 import re
 import secrets
-import json
 import smtplib
+import time
+import urllib.parse
 import urllib.request
 from datetime import datetime, date, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -82,15 +85,19 @@ ALLOWED_EMAIL_DOMAINS = [d.strip().lower().lstrip('@') for d in os.environ.get('
 EMAIL_HINT = ' or '.join('@' + d for d in ALLOWED_EMAIL_DOMAINS)
 ADMIN_EMAILS = {e.strip().lower() for e in os.environ.get('ADMIN_EMAILS', '').split(',') if e.strip()}
 
-# Email (optional). Without BREVO_API_KEY or MAIL_USERNAME the verification code is shown on screen (dev mode).
-# Render's free plan blocks SMTP ports, so online use BREVO_API_KEY (sent over HTTPS). SMTP is for local or paid hosts.
+# Email (optional). With none of Gmail, Brevo or SMTP set up, the verification code is shown on screen (dev mode).
+# Render's free plan blocks SMTP ports, so online use the Gmail API or Brevo's API (both over HTTPS).
+GMAIL_CLIENT_ID = os.environ.get('GMAIL_CLIENT_ID', '')
+GMAIL_CLIENT_SECRET = os.environ.get('GMAIL_CLIENT_SECRET', '')
+GMAIL_REFRESH_TOKEN = os.environ.get('GMAIL_REFRESH_TOKEN', '')
+GMAIL_ENABLED = bool(GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET and GMAIL_REFRESH_TOKEN)
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME', '')
 MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD', '')
 MAIL_FROM = os.environ.get('MAIL_FROM', MAIL_USERNAME)  # e.g. "Travel Buddy <hello@yourdomain.in>"
-EMAIL_ENABLED = bool(BREVO_API_KEY or MAIL_USERNAME)
+EMAIL_ENABLED = bool(GMAIL_ENABLED or BREVO_API_KEY or MAIL_USERNAME)
 # Render sets RENDER_EXTERNAL_URL itself, so SITE_URL is only needed for a custom domain.
 SITE_URL = (os.environ.get('SITE_URL') or os.environ.get('RENDER_EXTERNAL_URL') or 'http://127.0.0.1:5000').rstrip('/')
 
@@ -302,6 +309,37 @@ def is_student_email(email):
     return domain in ALLOWED_EMAIL_DOMAINS
 
 
+_gmail_token = {'value': '', 'expires': 0.0}
+
+
+def gmail_access_token():
+    """Swap the long-lived refresh token for a short-lived access token, reusing it until it nearly expires."""
+    if time.time() < _gmail_token['expires']:
+        return _gmail_token['value']
+    data = urllib.parse.urlencode({'client_id': GMAIL_CLIENT_ID, 'client_secret': GMAIL_CLIENT_SECRET,
+                                   'refresh_token': GMAIL_REFRESH_TOKEN, 'grant_type': 'refresh_token'}).encode()
+    with urllib.request.urlopen('https://oauth2.googleapis.com/token', data=data, timeout=15) as resp:
+        token = json.load(resp)
+    _gmail_token.update(value=token['access_token'], expires=time.time() + token.get('expires_in', 3600) - 60)
+    return _gmail_token['value']
+
+
+def send_email_gmail(to, subject, body):
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    if MAIL_FROM:
+        msg['From'] = MAIL_FROM  # must be the Gmail address itself; Gmail fills it in when unset
+    msg['To'] = to
+    msg.set_content(body)
+    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+    req = urllib.request.Request('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+                                 data=json.dumps({'raw': raw}).encode(),
+                                 headers={'authorization': f'Bearer {gmail_access_token()}',
+                                          'content-type': 'application/json'})
+    with urllib.request.urlopen(req, timeout=15):
+        pass
+
+
 def send_email_brevo(to, subject, body):
     name, addr = parseaddr(MAIL_FROM)
     payload = {'sender': {'name': name or 'Travel Buddy', 'email': addr},
@@ -331,9 +369,10 @@ def send_email(to, subject, body):
         print(f"[dev] Email to {to}: {subject}\n{body}")
         return False
     try:
-        (send_email_brevo if BREVO_API_KEY else send_email_smtp)(to, subject, body)
+        sender = send_email_gmail if GMAIL_ENABLED else send_email_brevo if BREVO_API_KEY else send_email_smtp
+        sender(to, subject, body)
     except Exception as e:  # noqa: BLE001
-        detail = e.read().decode(errors='replace') if hasattr(e, 'read') else ''  # Brevo explains refusals here
+        detail = e.read().decode(errors='replace') if hasattr(e, 'read') else ''  # Google and Brevo explain refusals here
         app.logger.error('Error sending email to %s: %s %s', to, e, detail)
         return False
     return True
@@ -348,7 +387,7 @@ def send_otp(email, purpose='verify'):
 
     if not EMAIL_ENABLED:
         if IS_PRODUCTION:  # never show codes on screen online
-            app.logger.error('Email is not configured: set BREVO_API_KEY and MAIL_FROM.')
+            app.logger.error('Email is not configured: set the GMAIL_* or BREVO_API_KEY settings.')
             return None
         print(f"[dev] Travel Buddy {purpose} code for {email}: {code}")
         return code
