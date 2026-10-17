@@ -10,6 +10,7 @@ _db_file = os.path.join(tempfile.mkdtemp(), 'test.db')
 os.environ['DATABASE_URL'] = os.environ.get('TEST_DATABASE_URL', f'sqlite:///{_db_file}')
 os.environ.pop('MAIL_USERNAME', None)
 os.environ.pop('BREVO_API_KEY', None)
+os.environ.pop('GMAIL_REFRESH_TOKEN', None)
 os.environ['RATELIMIT_ENABLED'] = '0'
 
 from app import app, db, User, Trip, CompanionRequest, Block, Report, places_match  # noqa: E402
@@ -283,6 +284,41 @@ class TravelBuddyTest(unittest.TestCase):
         self.assertEqual(sent['key'], 'k')
         self.assertEqual(sent['body']['sender'], {'name': 'Travel Buddy', 'email': 'noreply@example.in'})
         self.assertEqual(sent['body']['to'], [{'email': 'a@thapar.edu'}])
+
+    def test_gmail_api_email(self):
+        import base64
+        import io
+        import json
+        from unittest import mock
+        import app as app_module
+        calls = []
+
+        class Resp(io.BytesIO):
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+
+        def fake_urlopen(req, data=None, timeout=None):
+            if isinstance(req, str):  # token exchange
+                calls.append(('token', dict(p.split('=') for p in data.decode().split('&'))))
+                return Resp(json.dumps({'access_token': 'at', 'expires_in': 3600}).encode())
+            calls.append(('send', req.full_url, req.get_header('Authorization'), json.loads(req.data)))
+            return Resp(b'{}')
+
+        with mock.patch.multiple(app_module, GMAIL_ENABLED=True, GMAIL_CLIENT_ID='cid', GMAIL_CLIENT_SECRET='cs',
+                                 GMAIL_REFRESH_TOKEN='rt', EMAIL_ENABLED=True, MAIL_FROM='Travel Buddy <me@gmail.com>',
+                                 _gmail_token={'value': '', 'expires': 0.0}), \
+                mock.patch('urllib.request.urlopen', fake_urlopen):
+            self.assertTrue(app_module.send_email('a@thapar.edu', 'Code', 'Body 123'))
+            self.assertTrue(app_module.send_email('b@thapar.edu', 'Code', 'Body'))
+        self.assertEqual([c[0] for c in calls], ['token', 'send', 'send'])  # token reused
+        self.assertEqual(calls[0][1]['refresh_token'], 'rt')
+        _, url, auth, payload = calls[1]
+        self.assertEqual(url, 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send')
+        self.assertEqual(auth, 'Bearer at')
+        raw = base64.urlsafe_b64decode(payload['raw']).decode()
+        self.assertIn('To: a@thapar.edu', raw)
+        self.assertIn('From: Travel Buddy <me@gmail.com>', raw)
+        self.assertIn('Body 123', raw)
 
     def test_production_never_shows_code_on_screen(self):
         from unittest import mock

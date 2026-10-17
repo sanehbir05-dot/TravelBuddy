@@ -23,7 +23,12 @@ services:
         sync: false          # leave blank: Render's own address is used. Set only for a custom domain.
       - key: ADMIN_EMAILS
         sync: false          # your @thapar.edu address
-      - key: BREVO_API_KEY
-        sync: false          # Brevo > SMTP & API > API keys (the free plan blocks SMTP, so email goes over HTTPS)
+      # Email goes through the Gmail API (the free plan blocks SMTP). See README "Email (Gmail)".
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false
       - key: MAIL_FROM
-        sync: false          # a sender verified in Brevo, e.g. Travel Buddy <you@gmail.com>
+        sync: false          # Travel Buddy <the same Gmail address you signed in with>

@@ -24,15 +24,16 @@ If email isn't configured, verification and password-reset codes appear on scree
 
 ## Put it online (free)
 
-Everything runs on free plans with no card needed: Render for the web server, Neon for the Postgres database, and Brevo for email.
+Everything runs on free plans with no card needed: Render for the web server, Neon for the Postgres database, and your own Gmail account for email.
 
 1. **Database (Neon, free).** Create a project at neon.tech in the Singapore region and copy the connection string (`postgresql://...`).
-2. **Email (Brevo, free).** Create an account at brevo.com. Under **Senders**, add and verify the address emails come from (a Gmail address works to start; your own domain is less likely to land in spam at Thapar). Under **SMTP & API → API keys**, create a key. Render's free plan blocks email ports, so the app sends through Brevo's API over HTTPS instead.
+2. **Email (Gmail, free).** Render's free plan blocks email ports, so the app sends through the Gmail API over HTTPS, from your own Gmail address. See [Email (Gmail)](#email-gmail) below for the one-time setup.
 3. **Web server (Render, free).** Choose **New → Blueprint** and pick this repository. `render.yaml` sets up a free web service. Render then asks for:
    - `DATABASE_URL`: the Neon connection string
    - `SITE_URL`: leave blank. The app uses the address Render gives it. Fill it in only if you add your own domain.
    - `ADMIN_EMAILS`: your @thapar.edu address, which is allowed to review reports at `/admin/reports`
-   - `BREVO_API_KEY` and `MAIL_FROM`: the Brevo key and the sender you verified, for example `Travel Buddy <you@gmail.com>`
+   - `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`: from the Gmail setup below
+   - `MAIL_FROM`: `Travel Buddy <you@gmail.com>`, using the same Gmail address
 
    `SECRET_KEY` is generated automatically, and the database tables are updated with `flask db upgrade` each time the server starts.
 4. **Check it.** Sign up with a real @thapar.edu address and confirm the code email arrives and isn't in spam. Install it on a phone: on Android use Chrome's menu and choose "Install app". On iPhone use Safari's Share button and choose "Add to Home Screen".
@@ -41,8 +42,22 @@ Everything runs on free plans with no card needed: Render for the web server, Ne
 
 - **Render:** the server sleeps after 15 minutes with no visitors. The next visit takes about a minute to load while it wakes up, then it's normal speed. Free hours (750 a month) cover one site running all month.
 - **Neon:** the database also pauses when idle and wakes in under a second. 0.5 GB of storage is plenty for trips and chats at one college.
-- **Brevo:** 300 emails a day, which covers sign-up codes, password resets and request alerts for a pilot.
+- **Gmail:** about 500 emails a day, which covers sign-up codes, password resets and request alerts for a pilot. Emails come from your Gmail address.
 - Login and sign-up rate limits are kept in memory, so they reset when the server sleeps.
+
+## Email (Gmail)
+
+One-time setup, all free. Your Google account needs 2-Step Verification turned on.
+
+1. At console.cloud.google.com, create a project and enable the **Gmail API**.
+2. **OAuth consent screen:** choose External, fill in the app name and your Gmail, then **Publish app**. (In "Testing" the sign-in expires after 7 days.)
+3. **Credentials → Create credentials → OAuth client ID**, type **Web application**, with the redirect URI `https://developers.google.com/oauthplayground`. Keep the client ID and secret.
+4. Open developers.google.com/oauthplayground. Click the gear icon, tick **Use your own OAuth credentials** and paste the client ID and secret.
+5. In the box under the scope list, type `https://www.googleapis.com/auth/gmail.send` and click **Authorize APIs**. Sign in with the Gmail that will send the emails. Google warns the app isn't verified: choose **Advanced → Go to (app name)** and allow it.
+6. Click **Exchange authorization code for tokens** and copy the **Refresh token**.
+7. In Render, set `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` and `MAIL_FROM`. Never commit these.
+
+Brevo still works instead: set `BREVO_API_KEY` and leave the Gmail settings empty.
 
 ## What it does
 
