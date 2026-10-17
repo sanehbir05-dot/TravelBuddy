@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block head %}
+<style>
+    .hero { background: var(--yolk); padding: 40px 16px 0; overflow: hidden; }
+    .hero-inner { max-width: 1200px; margin: 0 auto; position: relative; }
+    .hero-word { font-family: 'Anton', sans-serif; font-size: clamp(4.5rem, 17vw, 15rem); line-height: 0.85; color: var(--forest); text-transform: uppercase; margin: 0; text-align: center; letter-spacing: -1px; }
+    .hero-mascot { width: clamp(120px, 20vw, 220px); margin: -40px auto 0; display: block; position: relative; }
+    .hero-row { display: flex; justify-content: space-between; gap: 24px; align-items: flex-end; padding: 10px 0 34px; flex-wrap: wrap; }
+    .hero-row p { max-width: 430px; font-weight: 600; margin: 0; }
+    .hero-actions { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+    .hero-actions a.plain { font-weight: 700; }
+
+    .example { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 56px; align-items: center; margin-top: 24px; }
+    .example h2 { font-size: clamp(2.6rem, 6vw, 4.6rem); text-wrap: balance; }
+    .example p { font-size: 1.1rem; max-width: 34em; }
+    .example .note { border-left: 6px solid var(--pink); padding-left: 14px; }
+    .sample { transform: rotate(2.5deg); }
+    .sample-label { position: absolute; top: -16px; left: 20px; transform: rotate(-4deg); z-index: 2; }
+    @media (max-width: 860px) { .example { grid-template-columns: 1fr; gap: 40px; } .sample { transform: none; } }
+
+    .who { display: flex; gap: 24px; align-items: baseline; flex-wrap: wrap; border-top: 3px solid var(--forest); padding-top: 24px; margin-top: 72px; }
+    .who h3 { font-size: 2rem; margin: 0; min-width: 220px; }
+    .who p { margin: 0; max-width: 40em; font-weight: 500; }
+    .placeholder { background: var(--pink-soft); border: 2px dashed var(--forest); border-radius: 8px; padding: 0 6px; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block hero %}
+<section class="hero">
+    <div class="hero-inner">
+        <h1 class="hero-word">Travel Buddy</h1>
+        <div class="hero-mascot">{% include "_mascot.html" %}</div>
+        <div class="hero-row">
+            <p class="fs-5">Taking the evening bus from Patiala to Delhi on Friday? Find out who else from TIET is on it before you leave.</p>
+            <div class="hero-actions">
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4">Sign up with your @thapar.edu email</a>
+                    <a href="{{ url_for('login') }}" class="plain">Log in</a>
+                {% else %}
+                    <a href="{{ url_for('create_trip') }}" class="btn btn-primary btn-lg px-4">Post your next trip</a>
+                    <a href="{{ url_for('dashboard') }}" class="plain">Go to dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+<div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+        {% for _ in range(2) %}{% for _ in range(4) %}<span>Who's going your way?</span><span><i class="bi bi-bus-front"></i></span>{% endfor %}{% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="example">
+    <div>
+        <h2 class="mb-4">Who else from TIET is on the 6 pm bus?</h2>
+        <p>Post your trip with roughly when you're leaving. If another TIET student is going to the same city within three hours of you, they show up on your trip with their first name, batch and departure time.</p>
+        <p>Send them a request. If they accept, you can chat here and agree where to meet. Until then, neither of you sees the other's full name or phone number.</p>
+        <p class="note">If you're a woman, you can make a trip women-only. Then only women from TIET can see it or ask to join.</p>
+    </div>
+
+    <div class="position-relative">
+        <span class="chip chip-pink sample-label">Example match</span>
+        <div class="card match-card p-3 sample" aria-label="Example of a match">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                    <h4 class="mb-0">Ananya G.</h4>
+                    <div class="small text-muted fw-semibold">Batch 2026 · Female</div>
+                </div>
+                <span class="chip chip-sky">1h 30m apart</span>
+            </div>
+            <div class="fw-bold mt-2">Patiala → Delhi</div>
+            <div class="d-flex flex-wrap gap-2 my-2">
+                <span class="chip"><i class="bi bi-calendar-event"></i> Fri evening</span>
+                <span class="chip"><i class="bi bi-clock"></i> ~19:30</span>
+                <span class="chip"><i class="bi bi-bus-front"></i> Bus</span>
+                <span class="badge-female">Women only</span>
+            </div>
+            <p class="small text-muted mb-3">“Can share an auto to the bus stand”</p>
+            <span class="btn btn-primary w-100" aria-hidden="true">Send companion request</span>
+        </div>
+    </div>
+</section>
+
+<section class="who">
+    <h3>Who can join</h3>
+    <p>Students at Thapar Institute of Engineering &amp; Technology (TIET), Patiala, with an @thapar.edu email. You sign up with it and confirm a code we send there. Only TIET students can see your trips.</p>
+</section>
+{% endblock %}

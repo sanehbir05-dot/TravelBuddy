@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Sign up{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9 col-lg-7 mx-auto">
+        <div class="card p-4 p-md-5">
+            <h1 class="page-title mb-2">Create your account</h1>
+            <p class="text-muted fw-medium mb-4">Sign up with your {{ EMAIL_HINT }} email. We'll send a code to verify it.</p>
+
+            {% if google_enabled() %}
+            <a href="{{ url_for('login_google') }}" class="btn btn-outline-primary w-100 py-3 mb-3 d-flex align-items-center justify-content-center gap-2">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="22" height="22"> Sign up with Google
+            </a>
+            <div class="d-flex align-items-center my-3"><hr class="flex-grow-1"><span class="px-3 text-muted small fw-bold">OR</span><hr class="flex-grow-1"></div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('register') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Full name</label>
+                    <input type="text" class="form-control" name="name" required value="{{ form.get('name', '') }}" placeholder="As on your college ID">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">College email</label>
+                    <input type="email" class="form-control" name="email" required value="{{ form.get('email', '') }}" placeholder="{{ EMAIL_EXAMPLE }}">
+                    <small class="text-muted">Must end in {{ EMAIL_HINT }}</small>
+                </div>
+                <div class="row mb-3 g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" name="password" required minlength="8" placeholder="At least 8 characters">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Gender</label>
+                        <select class="form-select" name="gender" required>
+                            <option value="" disabled {% if not form.get('gender') %}selected{% endif %}>Select...</option>
+                            {% for v, l in [('female','Female'), ('male','Male'), ('other','Non-binary / Other')] %}
+                            <option value="{{ v }}" {% if form.get('gender') == v %}selected{% endif %}>{{ l }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3 g-3">
+                    <div class="col-md-7">
+                        {% if colleges|length == 1 %}
+                        <label class="form-label">College</label>
+                        <input type="hidden" name="college" value="{{ colleges[0] }}">
+                        <div class="form-control" style="background: var(--cream);">{{ colleges[0] }}</div>
+                        {% else %}
+                        <label class="form-label">Your college</label>
+                        <select class="form-select" name="college" required id="college-select">
+                            <option value="">Search your college...</option>
+                            {% for college in colleges %}
+                                <option value="{{ college }}" {% if form.get('college') == college %}selected{% endif %}>{{ college }}</option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-5">{% include "_batch_field.html" %}</div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">WhatsApp / Instagram (optional)</label>
+                    <input type="text" class="form-control" name="contact_info" value="{{ form.get('contact_info', '') }}" placeholder="@username or +91...">
+                    <small class="text-muted">Never shown publicly. You choose whether to share it with each accepted companion.</small>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-100">Continue</button>
+            </form>
+
+            <p class="text-center text-muted fw-medium mt-4 mb-0">Already have an account?
+                <a href="{{ url_for('login') }}" class="fw-bold">Log in</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}{% include "_college_select_js.html" %}{% endblock %}

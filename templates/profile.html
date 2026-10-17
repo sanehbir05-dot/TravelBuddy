@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card p-4 p-md-5">
+            <h1 class="page-title mb-3">Your profile</h1>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <span class="chip chip-yolk">{{ current_user.college }}</span>
+                <span class="chip">Batch {{ current_user.batch }}</span>
+                <span class="chip">{{ current_user.gender|title }}</span>
+                <span class="chip chip-sky"><i class="bi bi-patch-check-fill"></i> {{ current_user.email }}</span>
+            </div>
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Full name</label>
+                    <input type="text" class="form-control" name="name" value="{{ current_user.name }}" required>
+                    <small class="text-muted">Others see “{{ current_user.public_name }}” until they become your companion.</small>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">WhatsApp / Instagram</label>
+                    <input type="text" class="form-control" name="contact_info" value="{{ current_user.contact_info }}" placeholder="@username or +91...">
+                    <small class="text-muted">Only shared with companions you choose.</small>
+                </div>
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" name="notify_by_email" id="notify_by_email" {% if current_user.notify_by_email %}checked{% endif %}>
+                    <label class="form-check-label" for="notify_by_email">Email me when someone sends or accepts a request</label>
+                </div>
+                <button class="btn btn-primary">Save</button>
+            </form>
+            <p class="small text-muted mt-4 mb-0">College, gender and batch are fixed after verification. Contact support to change them.</p>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card bg-pink p-4">
+            <h3 class="fs-2 mb-3">Blocked students</h3>
+            {% if blocks %}
+                {% for b in blocks %}
+                <div class="tile bg-white d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-semibold">{{ b.blocked.public_name }}</span>
+                    <form method="POST" action="{{ url_for('unblock_user', user_id=b.blocked_id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-outline-primary btn-sm">Unblock</button>
+                    </form>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="mb-0 fw-medium">You haven't blocked anyone.</p>
+            {% endif %}
+        </div>
+
+        <div class="card p-4 mt-4">
+            <h3 class="fs-2 mb-2">Delete account</h3>
+            <p class="small fw-medium">This cancels your trips and requests and removes your name, email and contact details. It can't be undone.</p>
+            <form method="POST" action="{{ url_for('delete_account') }}" class="d-flex gap-2 flex-wrap">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="delete-password" class="visually-hidden">Your password</label>
+                <input type="password" class="form-control" id="delete-password" name="password" required placeholder="Your password" style="max-width: 220px;">
+                <button class="btn btn-outline-danger">Delete my account</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

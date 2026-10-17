@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Matches{% endblock %}
+
+{% block content %}
+<div class="card bg-yolk p-4 mb-4">
+    <div class="small fw-bold text-uppercase mb-1">Matches for your trip</div>
+    <h1 class="page-title mb-3">{{ trip.origin }} → {{ trip.destination }}</h1>
+    {% set t = trip %}{% include "_trip_chips.html" %}
+    <form method="GET" class="d-flex flex-wrap gap-3 align-items-end mt-3">
+        <div>
+            <label class="form-label mb-1">Departing within</label>
+            <select name="window" class="form-select form-select-sm" onchange="this.form.submit()">
+                {% for h in [1, 2, 3, 4, 6, 12] %}<option value="{{ h }}" {% if h == window %}selected{% endif %}>± {{ h }} hour{{ 's' if h > 1 }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="batch" value="1" id="batch" {% if batch_only %}checked{% endif %} onchange="this.form.submit()">
+            <label class="form-check-label fw-semibold" for="batch">Only my batch ({{ current_user.batch }})</label>
+        </div>
+    </form>
+</div>
+
+{% if matches %}
+<div class="row g-3">
+    {% for m in matches %}{% set t = m.trip %}
+    <div class="col-md-6">
+        <div class="card match-card h-100 p-3">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                    <h4 class="mb-0">{{ t.user.public_name }}</h4>
+                    <div class="small text-muted fw-semibold">Batch {{ t.user.batch }}{% if t.user.gender == 'female' %} · Female{% endif %}</div>
+                </div>
+                <span class="chip chip-sky">{{ m.gap_minutes|gap }}</span>
+            </div>
+            <div class="fw-bold mt-2">{{ t.origin }} → {{ t.destination }}</div>
+            <div class="my-2">{% include "_trip_chips.html" %}</div>
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                {% if m.same_origin %}<span class="chip chip-yolk">✓ Same starting point</span>{% endif %}
+                {% if m.same_mode %}<span class="chip chip-yolk">✓ Same transport</span>{% endif %}
+                {% if m.same_batch %}<span class="chip chip-pink">Your batch</span>{% endif %}
+            </div>
+            {% if t.preferences %}<p class="small text-muted mb-2">“{{ t.preferences }}”</p>{% endif %}
+            <div class="mt-auto">
+            {% if m.request and m.request.status == 'accepted' %}
+                <a href="{{ url_for('messages', request_id=m.request.id) }}" class="btn btn-primary w-100">You're companions · Chat</a>
+            {% elif m.request %}
+                <button class="btn btn-outline-primary w-100" disabled>{{ 'Request sent' if m.request.sender_id == current_user.id else 'They sent you a request (see dashboard)' }}</button>
+            {% else %}
+                <a href="{{ url_for('send_request', trip_id=t.id) }}" class="btn btn-primary w-100">Send companion request</a>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty">
+    <div class="mx-auto" style="width:110px">{% include "_mascot.html" %}</div>
+    <h4>No matches yet</h4>
+    <p class="text-muted mx-auto" style="max-width: 520px;">Nobody from your college has posted a trip to {{ trip.destination }} within {{ window }} hour{{ 's' if window > 1 }} of you yet. Try a wider time window, or check back later. Your trip stays visible so others can find you.</p>
+    <a href="{{ url_for('search', destination=trip.destination) }}" class="btn btn-outline-primary mx-auto">Browse all trips to {{ trip.destination }}</a>
+</div>
+{% endif %}
+{% endblock %}

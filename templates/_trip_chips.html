@@ -1,0 +1,6 @@
+<div class="d-flex flex-wrap gap-2">
+    <span class="chip"><i class="bi bi-calendar-event"></i> {{ t.date|nice_date }}</span>
+    <span class="chip"><i class="bi bi-clock"></i> ~{{ t.time }}</span>
+    <span class="chip"><i class="bi {{ TRANSPORT_ICONS.get(t.transport_mode, 'bi-signpost') }}"></i> {{ TRANSPORT_MODES.get(t.transport_mode, t.transport_mode|title) }}</span>
+    {% if t.female_only_preference %}<span class="badge-female">Women only</span>{% endif %}
+</div>

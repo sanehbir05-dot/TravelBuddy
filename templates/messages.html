@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ other_user.name }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card overflow-hidden">
+            <div class="p-3 d-flex justify-content-between align-items-center" style="background: var(--yolk); border-bottom: 2.5px solid var(--forest);">
+                <div>
+                    <h4 class="mb-0">{{ other_user.name }}</h4>
+                    <small class="fw-semibold">{{ trip.origin }} → {{ trip.destination }} · {{ trip.date|nice_date }} ~{{ trip.time }}</small>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-sm">Back</a>
+            </div>
+
+            <div id="chat" class="p-3 d-flex flex-column gap-2" style="height: 440px; overflow-y: auto; background: var(--cream);">
+                {% for msg in messages %}{% set mine = msg.sender_id == current_user.id %}
+                <div class="{{ 'align-self-end' if mine else 'align-self-start' }}" style="max-width: 75%;">
+                    <div class="px-3 py-2" style="border: 2px solid var(--forest); border-radius: 18px; background: {{ 'var(--sky)' if mine else 'var(--white)' }};">
+                        <div style="white-space: pre-wrap;">{{ msg.message }}</div>
+                    </div>
+                    <div class="small text-muted {{ 'text-end' if mine }} mt-1">{{ msg.sent_at|local_time }}</div>
+                </div>
+                {% else %}
+                <div class="text-center my-auto" id="chat-empty">
+                    <div class="mx-auto" style="width:90px">{% include "_mascot.html" %}</div>
+                    <p class="fw-semibold mt-2">You're travel buddies! Say hi and agree where to meet.</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <form method="POST" class="p-3 d-flex gap-2" style="border-top: 2.5px solid var(--forest);">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" class="form-control" name="message" placeholder="Type a message..." required maxlength="2000" autocomplete="off" autofocus>
+                <button class="btn btn-primary px-4" type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card bg-sky p-4 mb-4">
+            <h3 class="fs-2 mb-3">Contact</h3>
+            {% if they_shared and other_user.contact_info %}
+                <p class="mb-3"><span class="fw-semibold">{{ other_user.name.split()[0] }}:</span> <strong>{{ other_user.contact_info }}</strong></p>
+            {% else %}
+                <p class="mb-3 fw-medium">{{ other_user.name.split()[0] }} hasn't shared contact details yet. You can keep chatting here.</p>
+            {% endif %}
+            <form method="POST" action="{{ url_for('share_contact', request_id=req.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if i_shared %}
+                    <p class="small mb-2">You're sharing <strong>{{ current_user.contact_info }}</strong>.</p>
+                    <input type="hidden" name="share" value="0"><button class="btn btn-outline-primary btn-sm">Stop sharing my contact</button>
+                {% else %}
+                    <input type="hidden" name="share" value="1"><button class="btn btn-primary btn-sm">Share my contact</button>
+                {% endif %}
+            </form>
+        </div>
+
+        <div class="card bg-cream p-4">
+            <h3 class="fs-2 mb-2">Safety</h3>
+            <ul class="small fw-medium ps-3">
+                <li>Meet at the station or another busy public spot.</li>
+                <li>Tell a friend or family member who you're travelling with.</li>
+                <li>You can cancel the plan at any time.</li>
+            </ul>
+            <div class="d-flex flex-wrap gap-2">
+                <form method="POST" action="{{ url_for('cancel_request', request_id=req.id) }}" onsubmit="return confirm('Cancel travelling together?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-primary btn-sm">Cancel plan</button>
+                </form>
+                <a href="{{ url_for('report_user', user_id=other_user.id) }}" class="btn btn-outline-danger btn-sm">Report</a>
+                <form method="POST" action="{{ url_for('block_user', user_id=other_user.id) }}" onsubmit="return confirm('Block {{ other_user.name.split()[0] }}? You will no longer see each other.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-danger btn-sm">Block</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    var chat = document.getElementById('chat');
+    var lastId = {{ messages[-1].id if messages else 0 }};
+    chat.scrollTop = chat.scrollHeight;
+
+    function bubble(m) {
+        var wrap = document.createElement('div');
+        wrap.className = m.mine ? 'align-self-end' : 'align-self-start';
+        wrap.style.maxWidth = '75%';
+        var b = document.createElement('div');
+        b.className = 'px-3 py-2';
+        b.style.cssText = 'border: 2px solid var(--forest); border-radius: 18px; background: ' + (m.mine ? 'var(--sky)' : 'var(--white)');
+        var t = document.createElement('div'); t.style.whiteSpace = 'pre-wrap'; t.textContent = m.text;
+        b.appendChild(t);
+        var time = document.createElement('div');
+        time.className = 'small text-muted mt-1' + (m.mine ? ' text-end' : '');
+        time.textContent = m.time;
+        wrap.appendChild(b); wrap.appendChild(time);
+        return wrap;
+    }
+
+    // Check for new messages every 8 seconds while the chat is open.
+    setInterval(function () {
+        if (document.hidden) return;
+        fetch('{{ url_for('messages_json', request_id=req.id) }}?after=' + lastId, { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : { messages: [] }; })
+            .then(function (data) {
+                if (!data.messages.length) return;
+                var empty = document.getElementById('chat-empty');
+                if (empty) empty.remove();
+                var atBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 60;
+                data.messages.forEach(function (m) { chat.appendChild(bubble(m)); lastId = m.id; });
+                if (atBottom) chat.scrollTop = chat.scrollHeight;
+            }).catch(function () {});
+    }, 8000);
+</script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Post a trip{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4 p-md-5">
+            <h1 class="page-title mb-2">Where are you headed?</h1>
+            <p class="text-muted fw-medium mb-4">Students from your college going the same way around the same time will be able to find you.</p>
+
+            <form method="POST" action="{{ url_for('create_trip') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">From</label>
+                        <input type="text" class="form-control" name="origin" required value="{{ form.get('origin', '') }}" placeholder="e.g. Chandigarh">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">To</label>
+                        <input type="text" class="form-control" name="destination" required value="{{ form.get('destination', '') }}" placeholder="e.g. Delhi">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date</label>
+                        <input type="date" class="form-control" name="date" required min="{{ today }}" value="{{ form.get('date', '') }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Approx. departure time</label>
+                        <input type="time" class="form-control" name="time" required value="{{ form.get('time', '') }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Travelling by</label>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for v, l in TRANSPORT_MODES.items() %}
+                            <input type="radio" class="btn-check" name="transport_mode" id="m-{{ v }}" value="{{ v }}" required {% if form.get('transport_mode') == v %}checked{% endif %}>
+                            <label class="btn btn-outline-primary" for="m-{{ v }}"><i class="bi {{ TRANSPORT_ICONS[v] }} me-1"></i>{{ l }}</label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Preferences (optional)</label>
+                        <input type="text" class="form-control" name="preferences" maxlength="300" value="{{ form.get('preferences', '') }}" placeholder="e.g. Happy to share a cab to the station, prefer a quiet ride">
+                    </div>
+                </div>
+
+                {% if current_user.gender == 'female' %}
+                <div class="card bg-pink p-3 mb-3" style="box-shadow:none;">
+                    <div class="form-check form-switch d-flex align-items-center gap-3 mb-0">
+                        <input class="form-check-input" type="checkbox" id="female_only" name="female_only" style="width: 3em; height: 1.5em;" {% if form.get('female_only') %}checked{% endif %}>
+                        <label class="form-check-label" for="female_only">
+                            <span class="fw-bold d-block">Women-only trip</span>
+                            <span class="small fw-medium">Only female students from your college can see this trip or send you a request, and you'll only be matched with women.</span>
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+
+                <p class="small text-muted"><i class="bi bi-shield-check"></i> Others see your first name, batch and trip details. Your full name and contact are shared only with companions you accept.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" class="btn btn-primary btn-lg">Post trip & find matches</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

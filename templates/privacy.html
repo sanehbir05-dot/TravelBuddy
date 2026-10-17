@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy{% endblock %}
+
+{% block content %}
+<div class="card p-4 p-md-5 mx-auto" style="max-width: 760px;">
+    <h1 class="page-title mb-3">Privacy</h1>
+    <p class="text-muted small">Last updated: [PLACEHOLDER: date you publish this]</p>
+
+    <h4 class="mt-4">What we store</h4>
+    <ul>
+        <li>Your name, @thapar.edu email, gender, batch and a hashed password (we never see your password).</li>
+        <li>Your WhatsApp or Instagram handle, if you add one.</li>
+        <li>The trips you post, the requests you send and receive, and chat messages with accepted companions.</li>
+        <li>Reports and blocks you make.</li>
+    </ul>
+
+    <h4 class="mt-4">Who can see it</h4>
+    <ul>
+        <li>Other verified TIET students see your first name, last initial, batch and your trip details.</li>
+        <li>Women-only trips are only shown to female students.</li>
+        <li>Your full name is shown only to students whose request you accepted, or who accepted yours.</li>
+        <li>Your contact handle is shown only to an accepted companion, and only if you choose to share it.</li>
+        <li>Your email address is never shown to other students.</li>
+        <li>Admins can see reports, including who made them, to keep the service safe.</li>
+    </ul>
+
+    <h4 class="mt-4">Emails</h4>
+    <p>We email you verification codes and, unless you turn it off on your profile, a note when someone sends or accepts a request.</p>
+
+    <h4 class="mt-4">Deleting your account</h4>
+    <p>You can delete your account from your profile. Your trips and requests are cancelled and your name, email and contact details are removed. Reports you were part of are kept, without your personal details, so earlier safety decisions still make sense.</p>
+
+    <h4 class="mt-4">Contact</h4>
+    <p>Questions or a data request: [PLACEHOLDER: contact email for Travel Buddy].</p>
+
+    <p class="small text-muted mt-4 mb-0">Travel Buddy is a student project and is not run by TIET. [PLACEHOLDER: confirm this, or name TIET's involvement if there is any.]</p>
+</div>
+{% endblock %}

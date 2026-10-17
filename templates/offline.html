@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Offline{% endblock %}
+
+{% block content %}
+<div class="card empty mx-auto" style="max-width: 560px;">
+    <div class="mx-auto" style="width:110px">{% include "_mascot.html" %}</div>
+    <h1 class="page-title">You're offline</h1>
+    <p class="fw-medium">Travel Buddy needs an internet connection to show trips and messages. Reconnect and try again.</p>
+    <button type="button" class="btn btn-primary mx-auto" onclick="location.reload()">Try again</button>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card empty mx-auto" style="max-width: 560px;">
+    <div class="mx-auto" style="width:110px">{% include "_mascot.html" %}</div>
+    <h1 class="page-title">{{ title }}</h1>
+    <p class="fw-medium">{{ message }}</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary mx-auto">Go to the home page</a>
+</div>
+{% endblock %}

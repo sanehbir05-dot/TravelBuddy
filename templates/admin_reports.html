@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<h1 class="page-title mb-4">Reports</h1>
+{% if reports %}
+<div class="d-flex flex-column gap-3">
+    {% for r in reports %}
+    <div class="card p-3 {% if r.status == 'open' %}bg-yolk{% endif %}">
+        <div class="d-flex flex-wrap justify-content-between gap-2">
+            <div>
+                <h5 class="mb-1">{{ r.reported.name }} <span class="text-muted fw-medium small">({{ r.reported.email }})</span>
+                    {% if r.reported.is_suspended %}<span class="chip ms-1">Suspended</span>{% endif %}</h5>
+                <div class="small fw-semibold">{{ r.reason }} · reported by {{ r.reporter.email }} · {{ r.created_at|local_time }}</div>
+                {% if r.details %}<p class="small mt-2 mb-0">{{ r.details }}</p>{% endif %}
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+                <span class="chip">{{ r.status|title }}</span>
+                {% for action, label in [('suspend', 'Suspend user'), ('reinstate', 'Reinstate'), ('dismiss', 'Dismiss')] %}
+                <form method="POST" action="{{ url_for('admin_report_action', report_id=r.id, action=action) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline-primary btn-sm">{{ label }}</button>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card empty"><p class="mb-0 fw-medium">No reports yet.</p></div>
+{% endif %}
+{% endblock %}

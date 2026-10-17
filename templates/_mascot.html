@@ -1,0 +1,31 @@
+{# "Buddy", the Travel Buddy mascot: a cheerful suitcase in a sky-blue cap. Usage: {% include "_mascot.html" %} inside a sized container. #}
+<svg viewBox="0 0 220 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Buddy the suitcase mascot" class="mascot">
+  <ellipse cx="110" cy="214" rx="70" ry="10" fill="var(--forest)" opacity="0.9"/>
+  <!-- handle -->
+  <rect x="80" y="38" width="60" height="34" rx="14" fill="none" stroke="var(--forest)" stroke-width="9"/>
+  <!-- wheels -->
+  <circle cx="70" cy="200" r="11" fill="var(--forest)"/>
+  <circle cx="150" cy="200" r="11" fill="var(--forest)"/>
+  <!-- body -->
+  <rect x="34" y="66" width="152" height="132" rx="30" fill="var(--cream)" stroke="var(--forest)" stroke-width="7"/>
+  <!-- luggage strap -->
+  <rect x="34" y="150" width="152" height="20" fill="var(--sky)" stroke="var(--forest)" stroke-width="6"/>
+  <rect x="98" y="146" width="24" height="28" rx="5" fill="var(--yolk)" stroke="var(--forest)" stroke-width="5"/>
+  <!-- travel sticker -->
+  <circle cx="160" cy="98" r="13" fill="var(--pink)" stroke="var(--forest)" stroke-width="4"/>
+  <!-- eyes -->
+  <ellipse cx="84" cy="110" rx="9" ry="12" fill="var(--forest)"/>
+  <ellipse cx="128" cy="110" rx="9" ry="12" fill="var(--forest)"/>
+  <circle cx="87" cy="106" r="3.2" fill="#fff"/>
+  <circle cx="131" cy="106" r="3.2" fill="#fff"/>
+  <!-- cheeks + smile -->
+  <ellipse cx="68" cy="130" rx="9" ry="6" fill="var(--pink)"/>
+  <ellipse cx="144" cy="130" rx="9" ry="6" fill="var(--pink)"/>
+  <path d="M92 128 Q106 142 120 128" fill="none" stroke="var(--forest)" stroke-width="6" stroke-linecap="round"/>
+  <!-- cap -->
+  <g transform="rotate(-14 110 50)">
+    <path d="M62 64 Q66 24 112 24 Q150 26 154 62 Z" fill="var(--sky)" stroke="var(--forest)" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M150 60 Q182 56 196 66 Q178 76 150 72 Z" fill="var(--sky)" stroke="var(--forest)" stroke-width="7" stroke-linejoin="round"/>
+    <circle cx="108" cy="24" r="6" fill="var(--forest)"/>
+  </g>
+</svg>
