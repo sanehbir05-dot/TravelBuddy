@@ -333,7 +333,8 @@ def send_email(to, subject, body):
     try:
         (send_email_brevo if BREVO_API_KEY else send_email_smtp)(to, subject, body)
     except Exception as e:  # noqa: BLE001
-        app.logger.error('Error sending email to %s: %s', to, e)
+        detail = e.read().decode(errors='replace') if hasattr(e, 'read') else ''  # Brevo explains refusals here
+        app.logger.error('Error sending email to %s: %s %s', to, e, detail)
         return False
     return True
 
@@ -346,6 +347,9 @@ def send_otp(email, purpose='verify'):
     db.session.commit()
 
     if not EMAIL_ENABLED:
+        if IS_PRODUCTION:  # never show codes on screen online
+            app.logger.error('Email is not configured: set BREVO_API_KEY and MAIL_FROM.')
+            return None
         print(f"[dev] Travel Buddy {purpose} code for {email}: {code}")
         return code
     what = 'reset your password' if purpose == 'reset' else 'verify your email'

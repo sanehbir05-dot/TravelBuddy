@@ -284,6 +284,12 @@ class TravelBuddyTest(unittest.TestCase):
         self.assertEqual(sent['body']['sender'], {'name': 'Travel Buddy', 'email': 'noreply@example.in'})
         self.assertEqual(sent['body']['to'], [{'email': 'a@thapar.edu'}])
 
+    def test_production_never_shows_code_on_screen(self):
+        from unittest import mock
+        import app as app_module
+        with mock.patch.object(app_module, 'IS_PRODUCTION', True), app.app_context():
+            self.assertIsNone(app_module.send_otp('a@thapar.edu'))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
